@@ -1,0 +1,33 @@
+version: '3.5'
+
+services:
+  postgres:
+    image: postgres:11.2
+    restart: unless-stopped
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+      - data:/var/lib/postgres/data
+    environment:
+      POSTGRES_USER: guacamole_user
+      POSTGRES_PASSWORD: dontusethispassword
+      POSTGRES_DB: guacamole_db
+  guacd:
+    image: guacamole/guacd:1.0.0
+    restart: unless-stopped
+  guacamole:
+    image: guacamole/guacamole:1.0.0
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES_HOSTNAME: postgres
+      POSTGRES_DATABASE: guacamole_db
+      POSTGRES_USER: guacamole_user
+      POSTGRES_PASSWORD: dontusethispassword
+      GUACD_HOSTNAME: guacd
+    depends_on:
+      - postgres
+      - guacd
+volumes:
+  data:
+    driver: local
